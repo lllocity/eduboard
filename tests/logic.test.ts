@@ -19,11 +19,11 @@ describe("validateHeaders", () => {
   });
 
   it("異常系: カラムが不足している場合、不足カラム名の配列を返す", () => {
-    const headers = ["対象月", "科目", "単元名"]; // 種別・大項目・備考 が欠如
+    const headers = ["対象月", "科目", "単元名"]; // 種別・大項目・メモ が欠如
     const missing = validateHeaders(headers);
     expect(missing).toContain("種別");
     expect(missing).toContain("大項目");
-    expect(missing).toContain("備考");
+    expect(missing).toContain("メモ");
     expect(missing).not.toContain("対象月");
   });
 
@@ -33,8 +33,8 @@ describe("validateHeaders", () => {
   });
 
   it("異常系: 1カラムだけ欠如している場合、そのカラムのみ返す", () => {
-    const headers = REQUIRED_COLUMNS.filter((c) => c !== "備考");
-    expect(validateHeaders([...headers])).toEqual(["備考"]);
+    const headers = REQUIRED_COLUMNS.filter((c) => c !== "メモ");
+    expect(validateHeaders([...headers])).toEqual(["メモ"]);
   });
 });
 
@@ -42,7 +42,7 @@ describe("validateHeaders", () => {
 // parseRecords
 // ============================================================
 describe("parseRecords", () => {
-  const headers = ["対象月", "種別", "科目", "大項目", "単元名", "備考"];
+  const headers = ["対象月", "種別", "科目", "大項目", "単元名", "メモ"];
 
   it("正常系: データ行をオブジェクト配列に変換する", () => {
     const rows = [[4, "学習", "算数", "計算", "分数の足し算", "重要"]];

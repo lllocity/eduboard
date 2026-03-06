@@ -184,10 +184,10 @@
 
   <!-- Tailwind CDN safelist: 動的バインドで使う全カラークラスを事前登録 -->
   <div class="hidden" aria-hidden="true">
-    <span class="bg-pink-50 text-pink-800 border-pink-200 text-pink-400 text-pink-900 bg-pink-50/30"></span>
-    <span class="bg-blue-50 text-blue-800 border-blue-200 text-blue-400 text-blue-900 bg-blue-50/30"></span>
-    <span class="bg-emerald-50 text-emerald-800 border-emerald-200 text-emerald-400 text-emerald-900 bg-emerald-50/30"></span>
-    <span class="bg-amber-50 text-amber-900 border-amber-200 text-amber-400 bg-amber-50/30"></span>
+    <span class="bg-pink-100 text-pink-800 border-pink-300 border-pink-200 text-pink-500 text-pink-900 bg-pink-100/60 bg-pink-100/40"></span>
+    <span class="bg-blue-100 text-blue-800 border-blue-300 border-blue-200 text-blue-500 text-blue-900 bg-blue-100/60 bg-blue-100/40"></span>
+    <span class="bg-emerald-100 text-emerald-800 border-emerald-300 border-emerald-200 text-emerald-500 text-emerald-900 bg-emerald-100/60 bg-emerald-100/40"></span>
+    <span class="bg-amber-100 text-amber-900 border-amber-300 border-amber-200 text-amber-500 bg-amber-100/60 bg-amber-100/40"></span>
   </div>
 </div>
 
@@ -197,40 +197,40 @@ const { createApp, ref, computed } = Vue;
 // ── 科目テーマカラーマッピング ──────────────────────────────
 const SUBJECT_THEMES = {
   '国語': {
-    badge:     'bg-pink-50 text-pink-800 border-pink-200',
-    headerBg:  'bg-pink-50 border-pink-100',
-    daiBg:     'bg-pink-50/30 border-pink-100',
-    daiMarker: 'text-pink-400',
+    badge:     'bg-pink-100 text-pink-800 border-pink-300',
+    headerBg:  'bg-pink-100 border-pink-200',
+    daiBg:     'bg-pink-100/60 border-pink-200',
+    daiMarker: 'text-pink-500',
     daiText:   'text-pink-900',
     rowOdd:    'bg-white',
-    rowEven:   'bg-pink-50/30',
+    rowEven:   'bg-pink-100/40',
   },
   '算数': {
-    badge:     'bg-blue-50 text-blue-800 border-blue-200',
-    headerBg:  'bg-blue-50 border-blue-100',
-    daiBg:     'bg-blue-50/30 border-blue-100',
-    daiMarker: 'text-blue-400',
+    badge:     'bg-blue-100 text-blue-800 border-blue-300',
+    headerBg:  'bg-blue-100 border-blue-200',
+    daiBg:     'bg-blue-100/60 border-blue-200',
+    daiMarker: 'text-blue-500',
     daiText:   'text-blue-900',
     rowOdd:    'bg-white',
-    rowEven:   'bg-blue-50/30',
+    rowEven:   'bg-blue-100/40',
   },
   '理科': {
-    badge:     'bg-emerald-50 text-emerald-800 border-emerald-200',
-    headerBg:  'bg-emerald-50 border-emerald-100',
-    daiBg:     'bg-emerald-50/30 border-emerald-100',
-    daiMarker: 'text-emerald-400',
+    badge:     'bg-emerald-100 text-emerald-800 border-emerald-300',
+    headerBg:  'bg-emerald-100 border-emerald-200',
+    daiBg:     'bg-emerald-100/60 border-emerald-200',
+    daiMarker: 'text-emerald-500',
     daiText:   'text-emerald-900',
     rowOdd:    'bg-white',
-    rowEven:   'bg-emerald-50/30',
+    rowEven:   'bg-emerald-100/40',
   },
   '社会': {
-    badge:     'bg-amber-50 text-amber-900 border-amber-200',
-    headerBg:  'bg-amber-50 border-amber-100',
-    daiBg:     'bg-amber-50/30 border-amber-100',
-    daiMarker: 'text-amber-400',
+    badge:     'bg-amber-100 text-amber-900 border-amber-300',
+    headerBg:  'bg-amber-100 border-amber-200',
+    daiBg:     'bg-amber-100/60 border-amber-200',
+    daiMarker: 'text-amber-500',
     daiText:   'text-amber-900',
     rowOdd:    'bg-white',
-    rowEven:   'bg-amber-50/30',
+    rowEven:   'bg-amber-100/40',
   },
 };
 const DEFAULT_THEME = {

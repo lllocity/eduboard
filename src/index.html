@@ -13,65 +13,41 @@
 
   <style>
     /* ================================================
-       共通
-       ================================================ */
-    .checkbox-item::before {
-      content: "□";
-      margin-right: 0.3rem;
-    }
-
-    /* ================================================
        印刷用スタイル（A4横向き）
        ================================================ */
     @media print {
-      @page { size: A4 landscape; margin: 1cm; }
+      @page { size: A4 landscape; margin: 0.8cm; }
 
       .no-print { display: none !important; }
 
-      body { font-size: 8.5pt; background: white; color: black; }
+      body { font-size: 8pt; background: white; color: black; }
 
       * {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
 
-      /* ビューA */
-      #view-matrix {
-        display: block !important;
-        page-break-after: always;
-        overflow: visible !important;
-      }
+      /* スクロール解除・折り返しレイアウト */
+      #scroll-wrap   { overflow: visible !important; }
+      #month-columns { flex-wrap: wrap !important; align-items: flex-start; }
 
-      /* ビューB: スクロール解除・折り返しレイアウト */
-      #view-checklist { display: block !important; }
-      #kanban-scroll  { overflow: visible !important; }
-      #kanban-container {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        gap: 5pt !important;
-        align-items: flex-start;
-      }
-
-      /* 月カード: 4列レイアウト */
-      .month-card {
-        width: 23% !important;
-        flex-shrink: 0 !important;
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
+      /* 月列の幅を印刷用に調整（A4横: ~277mm → 3列なら ~88mm） */
+      .month-col {
+        min-width: 0 !important;
+        width: 32% !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 6pt;
+        border: 1px solid #aaa !important;
         box-shadow: none !important;
-        border: 1px solid #999 !important;
-        margin-bottom: 5pt;
       }
 
-      /* 大項目ブロック・単元行も途中で切らない */
-      .dai-block  { break-inside: avoid; page-break-inside: avoid; }
-      .unit-row   { break-inside: avoid; page-break-inside: avoid; }
+      /* 科目ブロック・単元行を途中で切らない */
+      .subject-block { break-inside: avoid; page-break-inside: avoid; }
+      .unit-row      { break-inside: avoid; page-break-inside: avoid; }
 
-      /* 印刷時のグリッド列幅: メモ欄を広く */
-      .unit-grid  { grid-template-columns: 1fr 1.6rem 1.6rem 1fr !important; }
-
-      /* メモ欄罫線 */
-      .memo-cell  { border-bottom: 1px solid #bbb; }
+      /* メモ欄の罫線を強調 */
+      .memo-line { border-bottom: 1px solid #999 !important; }
     }
   </style>
 </head>
@@ -81,8 +57,8 @@
 
   <!-- ヘッダー -->
   <header class="bg-indigo-700 text-white shadow-md no-print">
-    <div class="max-w-screen-2xl mx-auto px-4 py-3 flex items-center justify-between">
-      <h1 class="text-xl font-bold tracking-wide">📚 EduBoard</h1>
+    <div class="max-w-full px-6 py-3 flex items-center justify-between">
+      <h1 class="text-xl font-bold tracking-wide">📚 EduBoard — 月別学習チェックリスト</h1>
       <button
         @click="loadData"
         :disabled="loading"
@@ -93,33 +69,10 @@
     </div>
   </header>
 
-  <!-- タブナビゲーション -->
-  <nav class="max-w-screen-2xl mx-auto px-4 pt-4 flex gap-2 no-print">
-    <button
-      @click="activeTab = 'matrix'"
-      :class="activeTab === 'matrix'
-        ? 'bg-indigo-600 text-white shadow'
-        : 'bg-white text-gray-600 hover:bg-indigo-50'"
-      class="px-5 py-2 rounded-t-lg font-semibold text-sm transition border border-gray-200"
-    >
-      ビューA: 年間マップ
-    </button>
-    <button
-      @click="activeTab = 'checklist'"
-      :class="activeTab === 'checklist'
-        ? 'bg-indigo-600 text-white shadow'
-        : 'bg-white text-gray-600 hover:bg-indigo-50'"
-      class="px-5 py-2 rounded-t-lg font-semibold text-sm transition border border-gray-200"
-    >
-      ビューB: 月別チェックリスト
-    </button>
-  </nav>
-
-  <!-- メインコンテンツ -->
-  <main class="max-w-screen-2xl mx-auto px-4 pb-10">
+  <main class="px-4 py-4">
 
     <!-- エラー表示 -->
-    <div v-if="error" class="mt-4 p-4 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-800 text-sm no-print" role="alert">
+    <div v-if="error" class="mb-4 p-4 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-800 text-sm no-print" role="alert">
       <p class="font-bold mb-1">エラーが発生しました</p>
       <p>{{ error }}</p>
     </div>
@@ -133,148 +86,93 @@
       <p>スプレッドシートからデータを取得中…</p>
     </div>
 
-    <!-- ========================================
-         ビューA: 全体俯瞰マトリクス（年間マップ）
-         ======================================== -->
-    <section v-show="activeTab === 'matrix'" id="view-matrix" class="mt-4">
-      <div class="bg-white rounded-b-lg rounded-tr-lg shadow border border-gray-200 overflow-x-auto">
-        <div class="px-6 py-3 border-b border-gray-100">
-          <h2 class="text-base font-bold text-indigo-800">年間スケジュール 全体俯瞰マトリクス</h2>
-        </div>
-        <table class="w-full text-xs border-collapse">
-          <thead>
-            <tr class="bg-indigo-50">
-              <th class="border border-gray-200 px-2 py-2 text-left font-bold text-indigo-700 min-w-[5rem]">科目</th>
-              <th
-                v-for="month in months"
-                :key="month"
-                class="border border-gray-200 px-1 py-2 text-center font-bold text-indigo-700 min-w-[6rem]"
-              >{{ month }}月</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(subject, si) in subjects"
-              :key="subject"
-              :class="si % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
-            >
-              <td class="border border-gray-200 px-2 py-1.5 font-semibold text-indigo-900 align-top whitespace-nowrap">
-                {{ subject }}
-              </td>
-              <td
-                v-for="month in months"
-                :key="month"
-                class="border border-gray-200 px-1.5 py-1 align-top"
-              >
-                <ul class="space-y-0.5">
-                  <li
-                    v-for="item in getMatrixItems(subject, month)"
-                    :key="item['単元名']"
-                    class="checkbox-item text-gray-700 leading-tight"
-                  >{{ item['単元名'] }}</li>
-                </ul>
-              </td>
-            </tr>
-            <tr v-if="subjects.length === 0">
-              <td :colspan="months.length + 1" class="text-center py-8 text-gray-400">
-                データがありません。「データを再読み込み」ボタンを押してください。
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+    <!-- 空データ -->
+    <div v-if="!loading && months.length === 0 && !error" class="mt-10 text-center text-gray-400 no-print">
+      データがありません。「データを再読み込み」ボタンを押してください。
+    </div>
 
-    <!-- ========================================
-         ビューB: 月別チェックリスト（階層型カンバン）
-         科目 ＞ 大項目 ＞ 単元名 の3階層構造
-         ======================================== -->
-    <section v-show="activeTab === 'checklist'" id="view-checklist" class="mt-4">
+    <!-- ======================================
+         月別チェックリスト（横スクロール）
+         ====================================== -->
+    <div id="scroll-wrap" class="overflow-x-auto" v-show="months.length > 0">
+      <div id="month-columns" class="flex gap-5" style="min-width: max-content;">
 
-      <div v-if="months.length === 0" class="bg-white rounded-lg shadow border border-gray-200 p-8 text-center text-gray-400">
-        データがありません。「データを再読み込み」ボタンを押してください。
-      </div>
+        <!-- ── 月列 ── -->
+        <div
+          v-for="month in months"
+          :key="month"
+          class="month-col flex-shrink-0 bg-white rounded-xl shadow border border-gray-200 overflow-hidden"
+          style="min-width: 500px;"
+        >
 
-      <!-- 横スクロール -->
-      <div id="kanban-scroll" class="overflow-x-auto pb-4">
-        <div id="kanban-container" class="flex gap-4" style="min-width: max-content;">
-
-          <!-- ─── 月カード ─── -->
-          <div
-            v-for="month in months"
-            :key="month"
-            class="month-card flex-shrink-0 w-80 bg-white rounded-lg shadow border border-gray-200 overflow-hidden"
-          >
-            <!-- 月ヘッダー -->
-            <div class="bg-indigo-700 text-white px-4 py-2 flex items-center justify-between">
-              <span class="text-sm font-bold">{{ month }}月</span>
-              <span class="text-indigo-300 text-xs">{{ getMonthItems(month).length }} 件</span>
-            </div>
-
-            <div class="p-2.5 space-y-3">
-
-              <!-- ─── 科目セクション ─── -->
-              <div v-for="subject in getMonthSubjects(month)" :key="subject">
-
-                <!-- 科目ヘッダー（目立つボックス） -->
-                <div class="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded mb-2 tracking-wide">
-                  {{ subject }}
-                </div>
-
-                <!-- ─── 大項目セクション ─── -->
-                <div
-                  v-for="dai in getMonthSubjectDaikoumoku(month, subject)"
-                  :key="dai"
-                  class="dai-block mb-2 border border-gray-200 rounded overflow-hidden"
-                >
-                  <!-- 大項目ヘッダー行 (■大項目 | 誤答 | 復習 | メモ) -->
-                  <div
-                    class="unit-grid grid items-center bg-gray-100 border-b border-gray-300 px-2 py-1"
-                    style="grid-template-columns: 1fr 2.4rem 2.4rem 5rem;"
-                  >
-                    <span class="text-xs font-bold text-gray-700">■ {{ dai }}</span>
-                    <span class="text-center text-xs font-semibold text-gray-500">誤答</span>
-                    <span class="text-center text-xs font-semibold text-gray-500">復習</span>
-                    <span class="text-xs font-semibold text-gray-500 pl-1">メモ</span>
-                  </div>
-
-                  <!-- ─── 単元行 ─── -->
-                  <div
-                    v-for="(item, idx) in getMonthSubjectDaiItems(month, subject, dai)"
-                    :key="item['単元名']"
-                    class="unit-row unit-grid grid items-center px-2 py-1.5"
-                    :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
-                    style="grid-template-columns: 1fr 2.4rem 2.4rem 5rem;"
-                  >
-                    <!-- 単元名 -->
-                    <span class="text-xs text-gray-800 leading-snug">
-                      <span class="text-gray-400 mr-1">·</span>{{ item['単元名'] }}
-                    </span>
-                    <!-- 誤答チェック -->
-                    <span class="text-center text-base text-gray-300 leading-none">□</span>
-                    <!-- 復習チェック -->
-                    <span class="text-center text-base text-gray-300 leading-none">□</span>
-                    <!-- メモ欄（罫線） -->
-                    <div class="memo-cell pl-1 h-5 border-b border-gray-300"></div>
-                  </div>
-
-                </div>
-                <!-- /大項目 -->
-
-              </div>
-              <!-- /科目 -->
-
-              <p v-if="getMonthItems(month).length === 0" class="text-xs text-center text-gray-400 py-4">
-                データなし
-              </p>
-
-            </div>
+          <!-- 月ヘッダー -->
+          <div class="bg-indigo-700 text-white px-5 py-2.5 flex items-center justify-between">
+            <span class="text-lg font-extrabold tracking-widest">{{ month }}月</span>
+            <span class="text-indigo-300 text-xs font-medium">{{ getMonthItems(month).length }} 件</span>
           </div>
-          <!-- /月カード -->
+
+          <!-- ── 科目ブロック ── -->
+          <div
+            v-for="subject in getMonthSubjects(month)"
+            :key="subject"
+            class="subject-block"
+          >
+            <!-- 科目ヘッダー -->
+            <div class="bg-indigo-50 border-b border-indigo-200 px-5 py-2 flex items-center gap-2">
+              <span class="inline-block bg-indigo-600 text-white text-xs font-bold px-2.5 py-0.5 rounded">
+                {{ subject }}
+              </span>
+            </div>
+
+            <!-- ── 大項目ブロック ── -->
+            <div
+              v-for="dai in getMonthSubjectDaikoumoku(month, subject)"
+              :key="dai"
+            >
+              <!-- 大項目ヘッダー -->
+              <div class="bg-gray-50 border-b border-gray-200 px-5 py-1.5">
+                <span class="text-xs font-bold text-gray-600">
+                  <span class="text-indigo-500 mr-1">■</span>
+                  <span class="whitespace-nowrap">{{ dai }}</span>
+                </span>
+              </div>
+
+              <!-- ── 単元行 ── -->
+              <div
+                v-for="(item, idx) in getMonthSubjectDaiItems(month, subject, dai)"
+                :key="item['単元名']"
+                class="unit-row flex items-center px-5 py-2 border-b border-gray-100 gap-3"
+                :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/60'"
+              >
+                <!-- 単元名（折り返し制御） -->
+                <span class="text-sm text-gray-800 whitespace-nowrap" style="min-width: 15em;">
+                  <span class="text-gray-300 mr-1.5 text-xs">·</span>{{ item['単元名'] }}
+                </span>
+
+                <!-- 誤答チェック -->
+                <span class="shrink-0 text-sm text-gray-500 whitespace-nowrap select-none">□ 誤答</span>
+
+                <!-- 復習済チェック -->
+                <span class="shrink-0 text-sm text-gray-500 whitespace-nowrap select-none">□ 復習済</span>
+
+                <!-- 手書きメモ欄（flex-grow で最大限広げる） -->
+                <div class="flex-1 min-w-[6rem] flex flex-col justify-end gap-1 pb-0.5">
+                  <div class="memo-line border-b border-gray-300 h-5"></div>
+                  <div class="memo-line border-b border-gray-300 h-5"></div>
+                </div>
+              </div>
+
+            </div>
+            <!-- /大項目 -->
+
+          </div>
+          <!-- /科目 -->
 
         </div>
+        <!-- /月列 -->
+
       </div>
-    </section>
+    </div>
 
   </main>
 </div>
@@ -284,10 +182,9 @@ const { createApp, ref, computed } = Vue;
 
 createApp({
   setup() {
-    const records = ref([]);
-    const loading  = ref(false);
-    const error    = ref(null);
-    const activeTab = ref('matrix');
+    const records   = ref([]);
+    const loading   = ref(false);
+    const error     = ref(null);
 
     const MONTH_ORDER = [4,5,6,7,8,9,10,11,12,1,2,3];
 
@@ -296,28 +193,14 @@ createApp({
       return MONTH_ORDER.filter(m => ms.includes(m));
     });
 
-    const subjects = computed(() =>
-      [...new Set(records.value.map(r => r['科目']).filter(Boolean))]
-    );
-
-    // ── ビューA ──────────────────────────────────────
-    function getMatrixItems(subject, month) {
-      return records.value.filter(
-        r => r['科目'] === subject && Number(r['対象月']) === month
-      );
-    }
-
-    // ── ビューB 共通 ──────────────────────────────────
     function getMonthItems(month) {
       return records.value.filter(r => Number(r['対象月']) === month);
     }
 
-    /** 指定月の科目一覧（出現順） */
     function getMonthSubjects(month) {
       return [...new Set(getMonthItems(month).map(r => r['科目']).filter(Boolean))];
     }
 
-    /** 指定月×科目の大項目一覧（出現順） */
     function getMonthSubjectDaikoumoku(month, subject) {
       return [...new Set(
         records.value
@@ -327,7 +210,6 @@ createApp({
       )];
     }
 
-    /** 指定月×科目×大項目の単元一覧 */
     function getMonthSubjectDaiItems(month, subject, dai) {
       return records.value.filter(
         r => Number(r['対象月']) === month
@@ -336,7 +218,6 @@ createApp({
       );
     }
 
-    // ── データ読み込み ────────────────────────────────
     function loadData() {
       loading.value = true;
       error.value   = null;
@@ -368,9 +249,7 @@ createApp({
     loadData();
 
     return {
-      records, loading, error, activeTab,
-      months, subjects,
-      getMatrixItems,
+      records, loading, error, months,
       getMonthItems,
       getMonthSubjects,
       getMonthSubjectDaikoumoku,

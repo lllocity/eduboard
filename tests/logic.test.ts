@@ -19,12 +19,12 @@ describe("validateHeaders", () => {
   });
 
   it("異常系: カラムが不足している場合、不足カラム名の配列を返す", () => {
-    const headers = ["対象月", "科目", "単元名"]; // 種別・大項目・メモ が欠如
+    const headers = ["対象月", "科目", "単元名"]; // 種別・大項目 が欠如
     const missing = validateHeaders(headers);
     expect(missing).toContain("種別");
     expect(missing).toContain("大項目");
-    expect(missing).toContain("メモ");
     expect(missing).not.toContain("対象月");
+    expect(missing).not.toContain("単元名");
   });
 
   it("異常系: ヘッダーが空の場合、全必須カラムを返す", () => {
@@ -33,8 +33,8 @@ describe("validateHeaders", () => {
   });
 
   it("異常系: 1カラムだけ欠如している場合、そのカラムのみ返す", () => {
-    const headers = REQUIRED_COLUMNS.filter((c) => c !== "メモ");
-    expect(validateHeaders([...headers])).toEqual(["メモ"]);
+    const headers = REQUIRED_COLUMNS.filter((c) => c !== "単元名");
+    expect(validateHeaders([...headers])).toEqual(["単元名"]);
   });
 });
 
@@ -42,10 +42,10 @@ describe("validateHeaders", () => {
 // parseRecords
 // ============================================================
 describe("parseRecords", () => {
-  const headers = ["対象月", "種別", "科目", "大項目", "単元名", "メモ"];
+  const headers = ["対象月", "種別", "科目", "大項目", "単元名"];
 
   it("正常系: データ行をオブジェクト配列に変換する", () => {
-    const rows = [[4, "学習", "算数", "計算", "分数の足し算", "重要"]];
+    const rows = [[4, "学習", "算数", "計算", "分数の足し算"]];
     const result = parseRecords(rows, headers);
     expect(result).toHaveLength(1);
     expect(result[0]["対象月"]).toBe(4);
@@ -55,8 +55,8 @@ describe("parseRecords", () => {
 
   it("正常系: 空行を除外する", () => {
     const rows = [
-      ["", "", "", "", "", ""],
-      [5, "学習", "国語", "読解", "物語文", ""],
+      ["", "", "", "", ""],
+      [5, "学習", "国語", "読解", "物語文"],
     ];
     const result = parseRecords(rows, headers);
     expect(result).toHaveLength(1);
@@ -65,17 +65,17 @@ describe("parseRecords", () => {
 
   it("正常系: 全行が空行の場合、空配列を返す", () => {
     const rows = [
-      ["", "", "", "", "", ""],
-      ["", "", "", "", "", ""],
+      ["", "", "", "", ""],
+      ["", "", "", "", ""],
     ];
     expect(parseRecords(rows, headers)).toEqual([]);
   });
 
   it("正常系: 複数行を正しく変換する", () => {
     const rows = [
-      [4, "学習", "算数", "計算", "分数", ""],
-      [4, "学習", "国語", "読解", "物語文", ""],
-      [5, "模試", "全科", "-", "春期模試", "四谷大塚"],
+      [4, "学習", "算数", "計算", "分数"],
+      [4, "学習", "国語", "読解", "物語文"],
+      [5, "模試", "全科", "-", "春期模試"],
     ];
     const result = parseRecords(rows, headers);
     expect(result).toHaveLength(3);
@@ -84,7 +84,7 @@ describe("parseRecords", () => {
 
   it("正常系: 値が undefined の場合、空文字にフォールバックする", () => {
     // 列数がヘッダーより少ない行
-    const rows = [[4, "学習"]]; // 残り4カラム分なし
+    const rows = [[4, "学習"]]; // 残り3カラム分なし
     const result = parseRecords(rows, headers);
     expect(result[0]["科目"]).toBe("");
     expect(result[0]["単元名"]).toBe("");

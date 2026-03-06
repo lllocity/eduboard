@@ -9,7 +9,6 @@ export const REQUIRED_COLUMNS = [
   "科目",
   "大項目",
   "単元名",
-  "メモ",
 ] as const;
 
 export type ScheduleRecord = Record<string, string | number | boolean>;

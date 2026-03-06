@@ -6,7 +6,10 @@ src/config.gs
 .clasp.json
 .claspignore
 
-# Node modules (if using clasp/npm in the future)
+# Build output (contains bundled code and secrets)
+dist/
+
+# Node modules
 node_modules/
 
 # OS/Editor files

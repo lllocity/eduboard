@@ -1,0 +1,15 @@
+# Secret files (Do not commit to public repo)
+src/env.gs
+src/config.gs
+
+# clasp config (contains script ID and credentials)
+.clasp.json
+.claspignore
+
+# Node modules (if using clasp/npm in the future)
+node_modules/
+
+# OS/Editor files
+.DS_Store
+.vscode/
+*.log

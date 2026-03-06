@@ -56,13 +56,13 @@
 <div id="app">
 
   <!-- ヘッダー -->
-  <header class="bg-indigo-700 text-white shadow-md no-print">
+  <header class="bg-white border-b border-gray-200 shadow-sm no-print">
     <div class="max-w-full px-6 py-3 flex items-center justify-between">
-      <h1 class="text-xl font-bold tracking-wide">📚 EduBoard — 月別学習チェックリスト</h1>
+      <h1 class="text-lg font-semibold text-slate-800 tracking-tight">📚 EduBoard <span class="text-slate-400 font-normal text-sm ml-1">月別学習チェックリスト</span></h1>
       <button
         @click="loadData"
         :disabled="loading"
-        class="bg-white text-indigo-700 font-semibold text-sm px-4 py-1.5 rounded-full hover:bg-indigo-100 transition disabled:opacity-50"
+        class="bg-indigo-600 text-white font-medium text-sm px-4 py-1.5 rounded-full hover:bg-indigo-700 transition disabled:opacity-50 shadow-sm"
       >
         {{ loading ? '読み込み中…' : 'データを再読み込み' }}
       </button>
@@ -106,9 +106,9 @@
         >
 
           <!-- 月ヘッダー -->
-          <div class="bg-indigo-700 text-white px-5 py-2.5 flex items-center justify-between">
-            <span class="text-lg font-extrabold tracking-widest">{{ month }}月</span>
-            <span class="text-indigo-300 text-xs font-medium">{{ getMonthItems(month).length }} 件</span>
+          <div class="bg-slate-100 border-b border-slate-200 px-5 py-2.5 flex items-center justify-between">
+            <span class="text-base font-bold text-slate-700 tracking-wide">{{ month }}月</span>
+            <span class="text-slate-400 text-xs font-medium">{{ getMonthItems(month).length }} 件</span>
           </div>
 
           <!-- ── 科目ブロック ── -->
@@ -118,8 +118,8 @@
             class="subject-block"
           >
             <!-- 科目ヘッダー -->
-            <div class="bg-indigo-50 border-b border-indigo-200 px-5 py-2 flex items-center gap-2">
-              <span class="inline-block bg-indigo-600 text-white text-xs font-bold px-2.5 py-0.5 rounded">
+            <div class="border-b border-gray-100 px-5 py-2 flex items-center gap-2">
+              <span class="inline-block bg-indigo-50 text-indigo-700 text-xs font-semibold px-3 py-0.5 rounded-full border border-indigo-100">
                 {{ subject }}
               </span>
             </div>
@@ -130,9 +130,9 @@
               :key="dai"
             >
               <!-- 大項目ヘッダー -->
-              <div class="bg-gray-50 border-b border-gray-200 px-5 py-1.5">
-                <span class="text-xs font-bold text-gray-600">
-                  <span class="text-indigo-500 mr-1">■</span>
+              <div class="bg-gray-50/70 border-b border-gray-100 px-5 py-1.5">
+                <span class="text-xs font-medium text-slate-500">
+                  <span class="text-indigo-300 mr-1">■</span>
                   <span class="whitespace-nowrap">{{ dai }}</span>
                 </span>
               </div>
@@ -142,23 +142,29 @@
                 v-for="(item, idx) in getMonthSubjectDaiItems(month, subject, dai)"
                 :key="item['単元名']"
                 class="unit-row flex items-center px-5 py-2 border-b border-gray-100 gap-3"
-                :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/60'"
+                :class="idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'"
               >
                 <!-- 単元名（折り返し制御） -->
-                <span class="text-sm text-gray-800 whitespace-nowrap" style="min-width: 15em;">
-                  <span class="text-gray-300 mr-1.5 text-xs">·</span>{{ item['単元名'] }}
+                <span class="text-sm text-slate-700 whitespace-nowrap" style="min-width: 15em;">
+                  <span class="text-slate-300 mr-1.5 text-xs">·</span>{{ item['単元名'] }}
                 </span>
 
-                <!-- 誤答チェック -->
-                <span class="shrink-0 text-sm text-gray-500 whitespace-nowrap select-none">□ 誤答</span>
+                <!-- 誤答チェックボックス -->
+                <label class="shrink-0 flex items-center gap-1 cursor-default select-none whitespace-nowrap">
+                  <span class="w-4 h-4 border border-gray-300 rounded-sm inline-block align-middle"></span>
+                  <span class="text-xs text-slate-400 font-medium">誤答</span>
+                </label>
 
-                <!-- 復習済チェック -->
-                <span class="shrink-0 text-sm text-gray-500 whitespace-nowrap select-none">□ 復習済</span>
+                <!-- 復習済チェックボックス -->
+                <label class="shrink-0 flex items-center gap-1 cursor-default select-none whitespace-nowrap">
+                  <span class="w-4 h-4 border border-gray-300 rounded-sm inline-block align-middle"></span>
+                  <span class="text-xs text-slate-400 font-medium">復習済</span>
+                </label>
 
                 <!-- 手書きメモ欄（flex-grow で最大限広げる） -->
                 <div class="flex-1 min-w-[6rem] flex flex-col justify-end gap-1 pb-0.5">
-                  <div class="memo-line border-b border-gray-300 h-5"></div>
-                  <div class="memo-line border-b border-gray-300 h-5"></div>
+                  <div class="memo-line border-b border-dotted border-gray-200 h-5"></div>
+                  <div class="memo-line border-b border-dotted border-gray-200 h-5"></div>
                 </div>
               </div>
 

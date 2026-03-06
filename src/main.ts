@@ -14,23 +14,27 @@ import {
 declare const SPREADSHEET_ID: string;
 declare const SHEET_NAME: string;
 
+// esbuild のバンドル後も GAS がグローバル関数として認識できるよう
+// global オブジェクトへ明示的にアサインする
+declare const global: Record<string, unknown>;
+
 /**
  * GAS WebアプリのエントリーポイントとしてHTMLを配信する
  */
-export function doGet(
+global.doGet = (
   _e: GoogleAppsScript.Events.DoGet
-): GoogleAppsScript.HTML.HtmlOutput {
+): GoogleAppsScript.HTML.HtmlOutput => {
   return HtmlService.createHtmlOutputFromFile("index")
     .setTitle("EduBoard")
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-}
+};
 
 /**
  * スプレッドシートからスケジュールデータを取得し JSON 文字列で返す
  * フロントエンドから google.script.run 経由で呼び出す
  * @returns { status: "success", data: [...] } または { status: "error", message: "..." }
  */
-export function getScheduleData(): string {
+global.getScheduleData = (): string => {
   try {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     const sheet = ss.getSheetByName(SHEET_NAME);
@@ -63,4 +67,4 @@ export function getScheduleData(): string {
       `データ取得中に予期しないエラーが発生しました: ${err.message}`
     );
   }
-}
+};

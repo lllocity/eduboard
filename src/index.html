@@ -117,9 +117,9 @@
             :key="subject"
             class="subject-block"
           >
-            <!-- 科目ヘッダー -->
-            <div class="border-b border-gray-100 px-5 py-2 flex items-center gap-2">
-              <span class="inline-block bg-indigo-50 text-indigo-700 text-xs font-semibold px-3 py-0.5 rounded-full border border-indigo-100">
+            <!-- 科目ヘッダー（テーマカラー） -->
+            <div class="border-b px-5 py-2 flex items-center gap-2" :class="getSubjectTheme(subject).headerBg">
+              <span class="inline-block text-xs font-semibold px-3 py-0.5 rounded-full border" :class="getSubjectTheme(subject).badge">
                 {{ subject }}
               </span>
             </div>
@@ -129,20 +129,20 @@
               v-for="dai in getMonthSubjectDaikoumoku(month, subject)"
               :key="dai"
             >
-              <!-- 大項目ヘッダー -->
-              <div class="bg-gray-50/70 border-b border-gray-100 px-5 py-1.5">
-                <span class="text-xs font-semibold text-slate-700">
-                  <span class="text-indigo-500 mr-1">■</span>
+              <!-- 大項目ヘッダー（テーマカラー） -->
+              <div class="border-b px-5 py-1.5" :class="getSubjectTheme(subject).daiBg">
+                <span class="text-xs font-semibold" :class="getSubjectTheme(subject).daiText">
+                  <span class="mr-1" :class="getSubjectTheme(subject).daiMarker">■</span>
                   <span class="whitespace-nowrap">{{ dai }}</span>
                 </span>
               </div>
 
-              <!-- ── 単元行 ── -->
+              <!-- ── 単元行（テーマカラー） ── -->
               <div
                 v-for="(item, idx) in getMonthSubjectDaiItems(month, subject, dai)"
                 :key="item['単元名']"
                 class="unit-row flex items-center px-5 py-2 border-b border-gray-100 gap-3"
-                :class="idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'"
+                :class="idx % 2 === 0 ? getSubjectTheme(subject).rowOdd : getSubjectTheme(subject).rowEven"
               >
                 <!-- 単元名（折り返し制御） -->
                 <span class="text-sm text-slate-900 whitespace-nowrap" style="min-width: 15em;">
@@ -181,10 +181,70 @@
     </div>
 
   </main>
+
+  <!-- Tailwind CDN safelist: 動的バインドで使う全カラークラスを事前登録 -->
+  <div class="hidden" aria-hidden="true">
+    <span class="bg-pink-50 text-pink-800 border-pink-200 text-pink-400 text-pink-900 bg-pink-50/30"></span>
+    <span class="bg-blue-50 text-blue-800 border-blue-200 text-blue-400 text-blue-900 bg-blue-50/30"></span>
+    <span class="bg-emerald-50 text-emerald-800 border-emerald-200 text-emerald-400 text-emerald-900 bg-emerald-50/30"></span>
+    <span class="bg-amber-50 text-amber-900 border-amber-200 text-amber-400 bg-amber-50/30"></span>
+  </div>
 </div>
 
 <script>
 const { createApp, ref, computed } = Vue;
+
+// ── 科目テーマカラーマッピング ──────────────────────────────
+const SUBJECT_THEMES = {
+  '国語': {
+    badge:     'bg-pink-50 text-pink-800 border-pink-200',
+    headerBg:  'bg-pink-50 border-pink-100',
+    daiBg:     'bg-pink-50/30 border-pink-100',
+    daiMarker: 'text-pink-400',
+    daiText:   'text-pink-900',
+    rowOdd:    'bg-white',
+    rowEven:   'bg-pink-50/30',
+  },
+  '算数': {
+    badge:     'bg-blue-50 text-blue-800 border-blue-200',
+    headerBg:  'bg-blue-50 border-blue-100',
+    daiBg:     'bg-blue-50/30 border-blue-100',
+    daiMarker: 'text-blue-400',
+    daiText:   'text-blue-900',
+    rowOdd:    'bg-white',
+    rowEven:   'bg-blue-50/30',
+  },
+  '理科': {
+    badge:     'bg-emerald-50 text-emerald-800 border-emerald-200',
+    headerBg:  'bg-emerald-50 border-emerald-100',
+    daiBg:     'bg-emerald-50/30 border-emerald-100',
+    daiMarker: 'text-emerald-400',
+    daiText:   'text-emerald-900',
+    rowOdd:    'bg-white',
+    rowEven:   'bg-emerald-50/30',
+  },
+  '社会': {
+    badge:     'bg-amber-50 text-amber-900 border-amber-200',
+    headerBg:  'bg-amber-50 border-amber-100',
+    daiBg:     'bg-amber-50/30 border-amber-100',
+    daiMarker: 'text-amber-400',
+    daiText:   'text-amber-900',
+    rowOdd:    'bg-white',
+    rowEven:   'bg-amber-50/30',
+  },
+};
+const DEFAULT_THEME = {
+  badge:     'bg-indigo-50 text-indigo-700 border-indigo-100',
+  headerBg:  'bg-white border-gray-100',
+  daiBg:     'bg-gray-50/70 border-gray-100',
+  daiMarker: 'text-indigo-500',
+  daiText:   'text-slate-700',
+  rowOdd:    'bg-white',
+  rowEven:   'bg-slate-50/40',
+};
+function getSubjectTheme(subject) {
+  return SUBJECT_THEMES[subject] || DEFAULT_THEME;
+}
 
 createApp({
   setup() {
@@ -260,6 +320,7 @@ createApp({
       getMonthSubjects,
       getMonthSubjectDaikoumoku,
       getMonthSubjectDaiItems,
+      getSubjectTheme,
       loadData,
     };
   }
